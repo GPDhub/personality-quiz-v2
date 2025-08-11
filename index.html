@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性格診断クイズ</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .progress-info {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .phase-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #495057;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            transition: width 0.3s;
+        }
+        .meta {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        .question {
+            margin-bottom: 30px;
+        }
+        .question h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .option {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 14px;
+        }
+        .option:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .option.active {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+            font-weight: bold;
+        }
+        .attention-note {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 10px;
+            display: none;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #545b62;
+        }
+        .btn:disabled {
+            background-color: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .results {
+            text-align: center;
+        }
+        .results h2 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .score-item {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .score-label {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .score-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .score-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .score-bar-fill {
+            height: 100%;
+            background-color: #007bff;
+            border-radius: 4px;
+        }
+        .score-level {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .type-result {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e7f3ff;
+            border-radius: 8px;
+            border: 2px solid #007bff;
+        }
+        .type-title {
+            margin-top: 0;
+            color: #007bff;
+            display: flex;
+            align-items: center;
+        }
+        .analysis-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .analysis-option {
+            padding: 15px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            min-width: 120px;
+            transition: all 0.2s;
+        }
+        .analysis-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .explanation-section {
+            margin-top: 30px;
+        }
+        .trait-explanation {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .trait-title {
+            margin: 0 0 15px 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+        .trait-bar {
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            background-color: #007bff;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        .advice-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e7f3ff;
+            border-radius: 8px;
+            border: 2px solid #007bff;
+        }
+        .advice-title {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .disclaimer {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #888;
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 600px) {
+            .analysis-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            .analysis-option {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>性格診断 v2</h1>
+            <div class="progress-info" id="progressInfo">1/5</div>
+        </div>
+        
+        <div class="phase-title" id="phaseTitle">基本診断（5問）</div>
+
+        <!-- プログレス表示 -->
+        <div id="progressSection">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="meta" id="metaInfo">進捗 0%</div>
+        </div>
+
+        <!-- 質問表示 -->
+        <div id="questionSection" class="question">
+            <h3 id="questionText"></h3>
+            <div class="options" id="answerOptions"></div>
+            <div class="attention-note" id="attentionNote">
+                注意チェック問題: 指示通りに回答してください
+            </div>
+        </div>
+
+        <!-- コントロールボタン -->
+        <div id="controlSection" class="controls">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">戻る</button>
+            <button class="btn btn-secondary" id="nextBtn" onclick="nextQuestion()">次へ</button>
+            <button class="btn btn-primary" id="resultBtn" onclick="showResult()">基本結果を見る</button>
+            <button class="btn btn-secondary" onclick="resetQuiz()">初期化</button>
+        </div>
+
+        <!-- 基本結果表示 -->
+        <div id="basicResult" class="results hidden">
+            <h2>基本診断結果</h2>
+            <div class="score-grid" id="basicScores"></div>
+            <div id="personalityType"></div>
+            <div id="traitFeatures"></div>
+            
+            <h3 style="margin-top:30px">さらに詳しく分析しますか？</h3>
+            <p style="font-size:14px; color:#666; text-align:center; margin:10px 0 20px 0">
+                より具体的なアドバイスと詳細な解説をご覧いただけます
+            </p>
+            <div class="analysis-options">
+                <div class="analysis-option" onclick="startDetailedAnalysis('personality')">
+                    <div style="font-weight:bold; margin-bottom:5px">性格判断</div>
+                    <div style="font-size:12px; color:#666">性格特性の詳細分析</div>
+                </div>
+                <div class="analysis-option" onclick="startDetailedAnalysis('career')">
+                    <div style="font-weight:bold; margin-bottom:5px">適職判断</div>
+                    <div style="font-size:12px; color:#666">職業適性の分析</div>
+                </div>
+                <div class="analysis-option" onclick="startDetailedAnalysis('love')">
+                    <div style="font-weight:bold; margin-bottom:5px">恋愛判断</div>
+                    <div style="font-size:12px; color:#666">恋愛傾向の分析</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 詳細結果表示 -->
+        <div id="detailedResult" class="results hidden">
+            <h2 id="resultTitle">詳細分析結果</h2>
+            <div class="score-grid" id="detailedScores"></div>
+            <div id="detailedExplanations" class="explanation-section"></div>
+            <div id="comprehensiveAdvice"></div>
+            <div class="disclaimer">
+                この結果は統計的な傾向に基づいています。個人差があることをご理解ください。
+            </div>
+            <button class="btn btn-primary" onclick="resetQuiz()" style="margin-top:20px">
+                最初からやり直す
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let currentPhase = 'basic';
+        let currentQuestions = [];
+        let currentAnswers = {};
+        let currentIndex = 0;
+        let basicResult = null;
+        let selectedAnalysis = null;
+
+        // 質問データベース
+        const QUESTIONS = {
+            basic: [
+                {id: 'O1', text: '新しいことに挑戦するのが好きだ', trait: 'O'},
+                {id: 'C1', text: '計画を立てて物事を進めるのが得意だ', trait: 'C'},
+                {id: 'E1', text: '人と話すことで活力が湧いてくる', trait: 'E'},
+                {id: 'A1', text: '人の気持ちを理解しようと努める', trait: 'A'},
+                {id: 'N1', text: '心配事があると気になって仕方がない', trait: 'N'}
+            ],
+            personality: [
+                // 開放性
+                {id: 'OP1', text: '抽象的な概念について考えるのが好きだ', trait: 'O'},
+                {id: 'OP2', text: '芸術作品を見て深く感動することがある', trait: 'O'},
+                {id: 'OP3', text: '哲学的な議論に興味がある', trait: 'O'},
+                // 誠実性
+                {id: 'CP1', text: '決めた目標に向かって継続的に努力できる', trait: 'C'},
+                {id: 'CP2', text: '細かい作業でもミスなく完成させる', trait: 'C'},
+                {id: 'CP3', text: '計画通りに物事が進まないとストレスを感じる', trait: 'C'},
+                // 外向性
+                {id: 'EP1', text: '知らない人の集まりでも積極的に参加できる', trait: 'E'},
+                {id: 'EP2', text: '人前で発表することに抵抗がない', trait: 'E'},
+                {id: 'EP3', text: '静かな環境で一人で過ごすのが好きだ', trait: 'E', reverse: true},
+                // 協調性
+                {id: 'AP1', text: '他人の立場に立って物事を考えることができる', trait: 'A'},
+                {id: 'AP2', text: '人との争いは極力避けたいと思う', trait: 'A'},
+                {id: 'AP3', text: '自分の意見を通すためなら多少強引でもいい', trait: 'A', reverse: true},
+                // 神経症傾向
+                {id: 'NP1', text: '予期しない出来事に動揺しやすい', trait: 'N'},
+                {id: 'NP2', text: '他人の評価が気になって仕方がない', trait: 'N'},
+                {id: 'NP3', text: '困難な状況でも冷静に対処できる', trait: 'N', reverse: true},
+                // 注意チェック
+                {id: 'ATT1', text: '注意チェック：この設問は「どちらでもない」を選んでください', type: 'attention'},
+                {id: 'ATT2', text: '注意チェック：この設問は「全くそう思わない」を選んでください', type: 'attention'}
+            ],
+            career: [
+                // 開放性
+                {id: 'OC1', text: '新しいスキルや知識の習得に積極的だ', trait: 'O'},
+                {id: 'OC2', text: '業務改善のアイデアを考えるのが好きだ', trait: 'O'},
+                {id: 'OC3', text: '既存のルールや手順を疑問に思うことがある', trait: 'O'},
+                // 誠実性
+                {id: 'CC1', text: '締切を守ることを最重要視している', trait: 'C'},
+                {id: 'CC2', text: '品質の高い仕事をするために時間をかける', trait: 'C'},
+                {id: 'CC3', text: '複数のタスクを並行して進めるのが得意だ', trait: 'C'},
+                // 外向性
+                {id: 'EC1', text: '会議で積極的に発言し議論をリードできる', trait: 'E'},
+                {id: 'EC2', text: 'チームメンバーのモチベーションを高めることができる', trait: 'E'},
+                {id: 'EC3', text: '個人作業の方が成果を上げやすい', trait: 'E', reverse: true},
+                // 協調性
+                {id: 'AC1', text: '同僚との協力を重視して仕事を進める', trait: 'A'},
+                {id: 'AC2', text: '顧客の要望には可能な限り応えたいと思う', trait: 'A'},
+                {id: 'AC3', text: '成果を上げるためなら多少の競争は仕方がない', trait: 'A', reverse: true},
+                // 神経症傾向
+                {id: 'NC1', text: '締切が迫ってもプレッシャーに負けずに作業できる', trait: 'N', reverse: true},
+                {id: 'NC2', text: 'クレーム対応などの困難な状況でも冷静でいられる', trait: 'N', reverse: true},
+                {id: 'NC3', text: '仕事のミスを指摘されると深く落ち込む', trait: 'N'},
+                // 注意チェック
+                {id: 'ATT3', text: '注意チェック：この設問は「ややそう思う」を選んでください', type: 'attention'},
+                {id: 'ATT4', text: '注意チェック：この設問は「あまりそう思わない」を選んでください', type: 'attention'}
+            ],
+            love: [
+                // 開放性
+                {id: 'OL1', text: 'パートナーとは新しい体験を共有したい', trait: 'O'},
+                {id: 'OL2', text: '相手の価値観が自分と違っても受け入れられる', trait: 'O'},
+                {id: 'OL3', text: '恋愛関係では安定性を最も重視する', trait: 'O', reverse: true},
+                // 誠実性
+                {id: 'CL1', text: '恋愛においても約束は必ず守るべきだと思う', trait: 'C'},
+                {id: 'CL2', text: '将来を見据えた真剣な交際をしたい', trait: 'C'},
+                {id: 'CL3', text: '恋愛では感情を優先して行動することが多い', trait: 'C', reverse: true},
+                // 外向性
+                {id: 'EL1', text: '好きになったら積極的にアプローチする', trait: 'E'},
+                {id: 'EL2', text: '恋人と一緒に友人たちと過ごす時間も楽しめる', trait: 'E'},
+                {id: 'EL3', text: '二人きりで過ごす時間が最も大切だ', trait: 'E', reverse: true},
+                // 協調性
+                {id: 'AL1', text: 'パートナーの気持ちを最優先に考えて行動する', trait: 'A'},
+                {id: 'AL2', text: '喧嘩になりそうなときは自分が折れることが多い', trait: 'A'},
+                {id: 'AL3', text: '恋愛では自分の意見をはっきり伝えることが大切だ', trait: 'A', reverse: true},
+                // 神経症傾向
+                {id: 'NL1', text: '恋人からの連絡が遅いと不安になってしまう', trait: 'N'},
+                {id: 'NL2', text: '恋人が他の人と親しくしているのを見ると嫉妬してしまう', trait: 'N'},
+                {id: 'NL3', text: '恋愛のもつれがあっても冷静に対処できる', trait: 'N', reverse: true},
+                // 注意チェック
+                {id: 'ATT5', text: '注意チェック：この設問は「とてもそう思う」を選んでください', type: 'attention'},
+                {id: 'ATT6', text: '注意チェック：この設問は「どちらでもない」を選んでください', type: 'attention'}
+            ]
+        };
+
+        const SCALE_LABELS = {
+            1: '全くそう思わない',
+            2: 'あまりそう思わない', 
+            3: 'どちらでもない',
+            4: 'ややそう思う',
+            5: 'とてもそう思う'
+        };
+
+        const TRAIT_NAMES = {
+            O: '開放性',
+            C: '誠実性', 
+            E: '外向性',
+            A: '協調性',
+            N: '神経症傾向'
+        };
+
+        // スコア計算
+        function scoreOf(answer, reverse = false) {
+            const value = reverse ? 6 - answer : answer;
+            return (value - 1) / 4; // 1-5 を 0-1 に正規化
+        }
+
+        // レベル判定
+        function getLevel(score) {
+            if (score >= 70) return '高';
+            if (score >= 30) return '中'; 
+            return '低';
+        }
+
+        // 初期化
+        function init() {
+            currentQuestions = QUESTIONS.basic;
+            updateUI();
+        }
+
+        // 質問に回答
+        function answerQuestion(value) {
+            const currentQuestion = currentQuestions[currentIndex];
+            currentAnswers[currentQuestion.id] = value;
+            
+            // ボタンの状態を更新
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => {
+                option.classList.toggle('active', parseInt(option.dataset.value) === value);
+            });
+            
+            updateUI();
+        }
+
+        // 前の質問
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateUI();
+            }
+        }
+
+        // 次の質問
+        function nextQuestion() {
+            if (currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                updateUI();
+            }
+        }
+
+        // すべて回答済みかチェック
+        function allAnswered() {
+            return currentQuestions.every(q => currentAnswers[q.id] !== undefined);
+        }
+
+        // 結果表示
+        function showResult() {
+            if (!allAnswered()) {
+                alert(currentPhase === 'basic' ? 'すべての質問に回答してください。' : '未回答があります。すべて回答してください。');
+                return;
+            }
+
+            if (currentPhase === 'basic') {
+                showBasicResult();
+            } else {
+                showDetailedResult();
+            }
+        }
+
+        // 基本結果表示
+        function showBasicResult() {
+            const traits = {O: 0, C: 0, E: 0, A: 0, N: 0};
+
+            for (const trait of ['O', 'C', 'E', 'A', 'N']) {
+                const question = currentQuestions.find(q => q.trait === trait);
+                if (question && currentAnswers[question.id]) {
+                    const value = currentAnswers[question.id];
+                    const score01 = scoreOf(value, !!question.reverse);
+                    traits[trait] = Math.round(score01 * 100);
+                }
+            }
+
+            basicResult = traits;
+            displayBasicResult(traits);
+        }
+
+        // 基本結果表示UI
+        function displayBasicResult(traits) {
+            // セクション切り替え
+            document.getElementById('progressSection').classList.add('hidden');
+            document.getElementById('questionSection').classList.add('hidden'); 
+            document.getElementById('controlSection').classList.add('hidden');
+            document.getElementById('basicResult').classList.remove('hidden');
+
+            // スコア表示
+            const scoresDiv = document.getElementById('basicScores');
+            const traitKeys = ['O', 'C', 'E', 'A', 'N'];
+            
+            scoresDiv.innerHTML = traitKeys.map(trait => {
+                const score = traits[trait];
+                const level = getLevel(score);
+                return `
+                    <div class="score-item">
+                        <div class="score-label">${TRAIT_NAMES[trait]}</div>
+                        <div class="score-value">${score}%</div>
+                        <div class="score-level">(${level}レベル)</div>
+                    </div>
+                `;
+            }).join('');
+
+            // 性格タイプ判定
+            const personalityType = getPersonalityType(traits);
+            document.getElementById('personalityType').innerHTML = `
+                <div class="type-result">
+                    <h3 class="type-title">
+                        <span style="margin-right:8px">🎯</span>
+                        あなたの性格タイプ: ${personalityType.type}
+                    </h3>
+                    <p style="margin:10px 0 0 0; line-height:1.6; color:#333">
+                        ${personalityType.description}
+                    </p>
+                </div>
+            `;
+        }
+
+        // 詳細分析開始
+        function startDetailedAnalysis(analysisType) {
+            selectedAnalysis = analysisType;
+            currentQuestions = QUESTIONS[analysisType];
+            currentAnswers = {};
+            currentIndex = 0;
+            currentPhase = analysisType;
+
+            // UI更新
+            document.getElementById('basicResult').classList.add('hidden');
+            document.getElementById('progressSection').classList.remove('hidden');
+            document.getElementById('questionSection').classList.remove('hidden');
+            document.getElementById('controlSection').classList.remove('hidden');
+
+            // フェーズタイトル更新
+            const phaseText = analysisType === 'personality' ? '性格詳細分析（17問）' :
+                              analysisType === 'career' ? '適職分析（17問）' :
+                              '恋愛傾向分析（17問）';
+            document.getElementById('phaseTitle').textContent = phaseText;
+
+            // 結果ボタンテキスト更新
+            const resultBtnText = analysisType === 'personality' ? '性格分析結果を見る' :
+                                  analysisType === 'career' ? '適職分析結果を見る' :
+                                  '恋愛分析結果を見る';
+            document.getElementById('resultBtn').textContent = resultBtnText;
+
+            updateUI();
+        }
+
+        // 詳細結果表示
+        function showDetailedResult() {
+            const traits = {O: 0, C: 0, E: 0, A: 0, N: 0};
+
+            // スコア計算
+            for (const trait of ['O', 'C', 'E', 'A', 'N']) {
+                const questions = currentQuestions.filter(q => q.trait === trait);
+                let sum = 0;
+                let count = 0;
+
+                for (const question of questions) {
+                    if (currentAnswers[question.id]) {
+                        const value = currentAnswers[question.id];
+                        const score01 = scoreOf(value, !!question.reverse);
+                        sum += score01;
+                        count++;
+                    }
+                }
+
+                if (count > 0) {
+                    traits[trait] = Math.round((sum / count) * 100);
+                }
+            }
+
+            displayDetailedResult(traits);
+        }
+
+        // 詳細結果表示UI
+        function displayDetailedResult(traits) {
+            // セクション切り替え
+            document.getElementById('progressSection').classList.add('hidden');
+            document.getElementById('questionSection').classList.add('hidden');
+            document.getElementById('controlSection').classList.add('hidden');
+            document.getElementById('detailedResult').classList.remove('hidden');
+
+            // タイトル更新
+            const titleText = selectedAnalysis === 'personality' ? '性格分析結果' :
+                              selectedAnalysis === 'career' ? '適職分析結果' :
+                              '恋愛分析結果';
+            document.getElementById('resultTitle').textContent = titleText;
+
+            // スコア表示
+            const scoresDiv = document.getElementById('detailedScores');
+            scoresDiv.innerHTML = ['O', 'C', 'E', 'A', 'N'].map(trait => {
+                const score = traits[trait];
+                const level = getLevel(score);
+                return `
+                    <div class="score-item">
+                        <div class="score-label">${TRAIT_NAMES[trait]}</div>
+                        <div class="score-value">${score}%</div>
+                        <div class="score-bar">
+                            <div class="score-bar-fill" style="width:${score}%"></div>
+                        </div>
+                        <div class="score-level">(${level}レベル)</div>
+                    </div>
+                `;
+            }).join('');
+
+            // 詳細解説
+            displayDetailedExplanations(traits);
+        }
+
+        // 詳細解説表示
+        function displayDetailedExplanations(traits) {
+            const explanationsDiv = document.getElementById('detailedExplanations');
+            
+            explanationsDiv.innerHTML = `
+                <h3>詳細解説</h3>
+                ${['O', 'C', 'E', 'A', 'N'].map(trait => {
+                    const score = traits[trait];
+                    const level = getLevel(score);
+                    const explanation = getTraitExplanation(trait, score);
+                    
+                    return `
+                        <div class="trait-explanation">
+                            <h4 class="trait-title">
+                                <span class="trait-bar"></span>
+                                ${TRAIT_NAMES[trait]} (${score}% - ${level}レベル)
+                            </h4>
+                            <p style="margin:0; line-height:1.6; color:#555">
+                                ${explanation}
+                            </p>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+
+            // 総合アドバイス
+            displayComprehensiveAdvice();
+        }
+
+        // 総合アドバイス表示
+        function displayComprehensiveAdvice() {
+            const adviceDiv = document.getElementById('comprehensiveAdvice');
+            const adviceTitle = selectedAnalysis === 'personality' ? '性格特性を活かすヒント' :
+                                selectedAnalysis === 'career' ? 'キャリア発展のアドバイス' :
+                                '恋愛関係を向上させるヒント';
+            
+            const adviceText = selectedAnalysis === 'career' ?
+                'あなたの性格特性を活かせる職場環境や職種を見つけることが重要です。強みを活かせる分野で経験を積み、苦手な分野については段階的にスキルを向上させていくことをお勧めします。' :
+                selectedAnalysis === 'love' ?
+                'パートナーとの関係において、お互いの性格特性を理解し尊重することが大切です。自分の特性を活かしながら、相手との違いを受け入れ、お互いを補完し合える関係を築いていきましょう。' :
+                'あなたの性格特性を理解することで、自分らしい生き方を見つけることができます。強みを活かし、課題があるところは意識的に成長していくことで、より充実した人生を送ることができるでしょう。';
+
+            adviceDiv.innerHTML = `
+                <div class="advice-section">
+                    <h3 class="advice-title">${adviceTitle}</h3>
+                    <p style="margin:0; line-height:1.6">${adviceText}</p>
+                </div>
+            `;
+        }
+
+        // 特性解説取得
+        function getTraitExplanation(trait, score) {
+            const level = getLevel(score);
+            const explanations = {
+                O: {
+                    高: '新しいアイデアや体験に開かれており、創造的で想像力豊かです。変化を好み、従来の方法にとらわれません。',
+                    中: '新しいことにある程度の関心を持ちつつ、慣れ親しんだものも重視します。バランスの取れた柔軟性を持っています。',
+                    低: '慣れ親しんだ方法や安定した環境を好みます。実用的で現実的な考え方をします。'
+                },
+                C: {
+                    高: '責任感が強く、計画性があり、目標達成に向けて着実に努力します。時間を守り、約束を重視します。',
+                    中: '適度な計画性と柔軟性を兼ね備えています。重要なことには責任を持って取り組みます。',
+                    低: '自由度を重視し、柔軟なアプローチを好みます。その場の状況に応じた対応を得意とします。'
+                },
+                E: {
+                    高: '人との交流からエネルギーを得て、社交的で積極的です。グループの中心になることが多いです。',
+                    中: '状況に応じて社交的になったり、一人の時間を楽しんだりできます。',
+                    低: '少数の深い関係を重視し、一人の時間を大切にします。内面的な世界を豊かに持っています。'
+                },
+                A: {
+                    高: '他人への思いやりが深く、協力的で親切です。調和を重視し、相手の気持ちを理解しようと努めます。',
+                    中: '他人を思いやりつつ、自分の意見も適切に主張できます。',
+                    低: '自分の意見をはっきりと表現し、目標達成のために競争的になることがあります。'
+                },
+                N: {
+                    高: '感情が豊かで敏感です。ストレスを感じやすく、安心できる環境を重視します。',
+                    中: '適度な敏感性を持ちながら、多くの状況で安定していられます。',
+                    低: '感情的に安定しており、ストレスやプレッシャーに強いです。困難な状況でも冷静を保てます。'
+                }
+            };
+            
+            return explanations[trait][level];
+        }
+
+        // 性格タイプ判定
+        function getPersonalityType(traits) {
+            const levels = ['O', 'C', 'E', 'A', 'N'].map(t => getLevel(traits[t]));
+            const [O, C, E, A, N] = levels;
+
+            if (E === '高' && A === '高' && N === '低') {
+                return {
+                    type: '社交的リーダータイプ',
+                    description: '人との関わりを重視し、チームをまとめる力があります。ポジティブで協調性があり、多くの人から信頼される性格です。'
+                };
+            } else if (O === '高' && C === '高') {
+                return {
+                    type: '創造的実行者タイプ',
+                    description: '新しいアイデアを生み出し、それを確実に実行する力を持っています。計画性と創造性を兼ね備えています。'
+                };
+            } else if (A === '高' && N === '低' && C === '高') {
+                return {
+                    type: '安定した支援者タイプ',
+                    description: '他者を支えることに長けており、責任感が強く信頼できる性格です。チームの安定を保つ役割を果たします。'
+                };
+            } else {
+                return {
+                    type: 'バランス型',
+                    description: '各特性がバランスよく発達しており、様々な状況に適応できる柔軟性を持っています。'
+                };
+            }
+        }
+
+        // クイズリセット
+        function resetQuiz() {
+            currentPhase = 'basic';
+            currentQuestions = QUESTIONS.basic;
+            currentAnswers = {};
+            currentIndex = 0;
+            basicResult = null;
+            selectedAnalysis = null;
+
+            // UI リセット
+            document.getElementById('basicResult').classList.add('hidden');
+            document.getElementById('detailedResult').classList.add('hidden');
+            document.getElementById('progressSection').classList.remove('hidden');
+            document.getElementById('questionSection').classList.remove('hidden');
+            document.getElementById('controlSection').classList.remove('hidden');
+            document.getElementById('phaseTitle').textContent = '基本診断（5問）';
+            document.getElementById('resultBtn').textContent = '基本結果を見る';
+
+            updateUI();
+        }
+
+        // UI更新
+        function updateUI() {
+            const currentQuestion = currentQuestions[currentIndex];
+            const answered = currentAnswers[currentQuestion?.id];
+            const answeredCount = Object.keys(currentAnswers).length;
+            const progress = currentQuestions.length ? Math.round((answeredCount / currentQuestions.length) * 100) : 0;
+            const allAnswered = currentQuestions.every(q => currentAnswers[q.id] !== undefined);
+
+            // プログレス更新
+            document.getElementById('progressInfo').textContent = `${currentIndex + 1}/${currentQuestions.length}`;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('metaInfo').textContent = `進捗 ${progress}%`;
+
+            // 質問表示
+            if (currentQuestion) {
+                document.getElementById('questionText').textContent = currentQuestion.text;
+
+                // 回答選択肢
+                const optionsDiv = document.getElementById('answerOptions');
+                optionsDiv.innerHTML = [1, 2, 3, 4, 5].map(value => `
+                    <div class="option ${answered === value ? 'active' : ''}" 
+                         data-value="${value}" 
+                         onclick="answerQuestion(${value})">
+                        ${SCALE_LABELS[value]}
+                    </div>
+                `).join('');
+
+                // 注意チェック表示
+                const attentionNote = document.getElementById('attentionNote');
+                if (currentQuestion.type === 'attention') {
+                    attentionNote.style.display = 'block';
+                } else {
+                    attentionNote.style.display = 'none';
+                }
+            }
+
+            // ボタンの状態更新
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex >= currentQuestions.length - 1;
+            document.getElementById('resultBtn').disabled = !allAnswered;
+        }
+
+        // 初期化実行
+        window.onload = init;
+    </script>
+</body>
+</html>
