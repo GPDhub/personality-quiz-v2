@@ -206,6 +206,7 @@
         }
         .explanation-section {
             margin-top: 30px;
+            text-align: left;
         }
         .trait-explanation {
             margin-bottom: 25px;
@@ -213,6 +214,7 @@
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             background-color: #fafafa;
+            text-align: left;
         }
         .trait-title {
             margin: 0 0 15px 0;
@@ -699,18 +701,102 @@
                                 selectedAnalysis === 'career' ? 'キャリア発展のアドバイス' :
                                 '恋愛関係を向上させるヒント';
             
-            const adviceText = selectedAnalysis === 'career' ?
-                'あなたの性格特性を活かせる職場環境や職種を見つけることが重要です。強みを活かせる分野で経験を積み、苦手な分野については段階的にスキルを向上させていくことをお勧めします。' :
-                selectedAnalysis === 'love' ?
-                'パートナーとの関係において、お互いの性格特性を理解し尊重することが大切です。自分の特性を活かしながら、相手との違いを受け入れ、お互いを補完し合える関係を築いていきましょう。' :
-                'あなたの性格特性を理解することで、自分らしい生き方を見つけることができます。強みを活かし、課題があるところは意識的に成長していくことで、より充実した人生を送ることができるでしょう。';
+            let adviceContent = '';
+            
+            if (selectedAnalysis === 'career') {
+                // キャリアアドバイスの場合、おすすめの職業を列挙
+                const recommendations = getCareerRecommendations();
+                adviceContent = `
+                    <p style="margin:0 0 20px 0; line-height:1.6">あなたの性格特性を活かせる職場環境や職種を見つけることが重要です。以下のような職業があなたに適している可能性があります：</p>
+                    <div style="margin-bottom:20px">
+                        <h4 style="margin:0 0 10px 0; color:#007bff">おすすめの職業</h4>
+                        <ul style="margin:0; padding-left:20px; line-height:1.8">
+                            ${recommendations.map(job => `<li>${job}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <p style="margin:0; line-height:1.6">強みを活かせる分野で経験を積み、苦手な分野については段階的にスキルを向上させていくことをお勧めします。</p>
+                `;
+            } else if (selectedAnalysis === 'love') {
+                adviceContent = '<p style="margin:0; line-height:1.6">パートナーとの関係において、お互いの性格特性を理解し尊重することが大切です。自分の特性を活かしながら、相手との違いを受け入れ、お互いを補完し合える関係を築いていきましょう。</p>';
+            } else {
+                adviceContent = '<p style="margin:0; line-height:1.6">あなたの性格特性を理解することで、自分らしい生き方を見つけることができます。強みを活かし、課題があるところは意識的に成長していくことで、より充実した人生を送ることができるでしょう。</p>';
+            }
 
             adviceDiv.innerHTML = `
                 <div class="advice-section">
                     <h3 class="advice-title">${adviceTitle}</h3>
-                    <p style="margin:0; line-height:1.6">${adviceText}</p>
+                    ${adviceContent}
                 </div>
             `;
+        }
+
+        // キャリアおすすめ職業取得
+        function getCareerRecommendations() {
+            // 詳細結果のスコアを取得（showDetailedResultで計算されたスコア）
+            const traits = {O: 0, C: 0, E: 0, A: 0, N: 0};
+            
+            // 現在のスコアを再計算（簡易版）
+            for (const trait of ['O', 'C', 'E', 'A', 'N']) {
+                const questions = currentQuestions.filter(q => q.trait === trait);
+                let sum = 0;
+                let count = 0;
+                
+                for (const question of questions) {
+                    if (currentAnswers[question.id]) {
+                        const value = currentAnswers[question.id];
+                        const score01 = scoreOf(value, !!question.reverse);
+                        sum += score01;
+                        count++;
+                    }
+                }
+                
+                if (count > 0) {
+                    traits[trait] = Math.round((sum / count) * 100);
+                }
+            }
+
+            const recommendations = [];
+            
+            // 開放性が高い場合
+            if (traits.O >= 70) {
+                recommendations.push('研究開発職', 'クリエイティブディレクター', 'プロダクトデザイナー', 'コンサルタント', '起業家');
+            } else if (traits.O >= 30) {
+                recommendations.push('プロジェクトマネージャー', 'マーケティング', 'システムエンジニア');
+            } else {
+                recommendations.push('事務職', '経理・会計', '製造業', '公務員', '銀行員');
+            }
+
+            // 誠実性が高い場合
+            if (traits.C >= 70) {
+                recommendations.push('プロジェクトマネージャー', '品質管理', '法務', '医療従事者', '会計士');
+            } else if (traits.C < 30) {
+                recommendations.push('アーティスト', 'ジャーナリスト', 'イベント企画', '営業');
+            }
+
+            // 外向性が高い場合
+            if (traits.E >= 70) {
+                recommendations.push('営業', '接客業', '教師', '広報・PR', 'チームリーダー', 'イベント企画');
+            } else if (traits.E < 30) {
+                recommendations.push('研究職', 'プログラマー', 'ライター', 'アナリスト', '図書館司書');
+            }
+
+            // 協調性が高い場合
+            if (traits.A >= 70) {
+                recommendations.push('看護師', 'カウンセラー', '教師', '社会福祉士', 'カスタマーサポート');
+            } else if (traits.A < 30) {
+                recommendations.push('弁護士', '経営者', '営業', 'トレーダー', 'スポーツ選手');
+            }
+
+            // 神経症傾向が低い場合（ストレス耐性が高い）
+            if (traits.N < 30) {
+                recommendations.push('救急医療', '危機管理', '起業家', '営業管理職', 'パイロット');
+            } else if (traits.N >= 70) {
+                recommendations.push('在宅ワーク', 'アーティスト', '研究職', 'ライター', 'デザイナー');
+            }
+
+            // 重複を除去し、最大8個に制限
+            const uniqueRecommendations = [...new Set(recommendations)];
+            return uniqueRecommendations.slice(0, 8);
         }
 
         // 特性解説取得
