@@ -37,7 +37,7 @@
 3. 質問に答えて診断開始！
 
 ### オンラインで利用
-GitHub Pages: [https://ユーザー名.github.io/リポジトリ名/](https://ユーザー名.github.io/リポジトリ名/)
+GitHub Pages: https://gpdhub.github.io/personality-quiz-v2/
 
 ## 🛠️ 技術仕様
 
